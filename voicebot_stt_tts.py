@@ -1,4 +1,15 @@
 import streamlit as st
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+get_api_key = os.environ.get('OPEN_API_KEY')
+
+client = OpenAI(
+    api_key = get_api_key
+)
 
 def main():
     st.set_page_config(page_title="음성 로봇", layout="wide")
@@ -19,6 +30,28 @@ def main():
         )
 
         st.markdown("")
+
+       
+    with st.sidebar:
+
+        # GPT 모델을 선택하기 위한 라디오 버튼
+        model = st.radio(label="GPT 모델", options=["gpt-3.5-turbo", "gpt-4o", "gpt-4-turbo"])
+        st.markdown("---")
+
+        # 리셋 버튼 생성
+        if st.button(label="초기화"):
+            # 리셋 코드 
+            pass
+
+    # 기능 구현 공간
+    col1, col2 = st.columns(2)
+    with col1:
+        # 왼쪽 영역 작성
+        st.subheader("질문하기")
+
+    with col2:
+        # 오른쪽 영역 작성
+        st.subheader("질문/답변")
 
 #실행함수
 if __name__=="__main__":
