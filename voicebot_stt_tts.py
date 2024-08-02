@@ -30,6 +30,18 @@ def main():
         )
 
         st.markdown("")
+    system_content ="You are a thoughtful assistant. Respond to all input in 25 words and answer in korea"
+
+    # session state 초기화
+
+    if "chat" not in st.session_state:
+        st.session_state["chat"] =[]
+    
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "system", "content": system_content}]
+
+    if "check_reset" not in st.session_state:
+        st.session_state["check_reset"] = False
 
        
     with st.sidebar:
