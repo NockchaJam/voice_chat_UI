@@ -62,6 +62,7 @@ def main():
         st.markdown("")
     system_content ="You are a thoughtful assistant. Respond to all input in 25 words and answer in korea"
 
+
     # session state 초기화
 
     if "chat" not in st.session_state:
@@ -74,6 +75,7 @@ def main():
         st.session_state["check_reset"] = False
 
        
+
     with st.sidebar:
 
         # GPT 모델을 선택하기 위한 라디오 버튼
@@ -113,6 +115,23 @@ def main():
     with col2:
         # 오른쪽 영역 작성
         st.subheader("질문/답변")
+
+        if (audio.duration_seconds > 0) and (st.session_state["check_reset"]== False):
+            #chatgpt에게 답변 받기
+            response = ask_gpt(st.session_state["messages"], model)
+
+            #GPT 모델에 넣을 프롬프트를 위해 답변 내용 저장
+            st.session_state["messages"] = st.session_state["messages"] + [{"role": "system", "content": response}]
+
+            #채팅 시각화를 위한 답변 내용 저장
+            now = datetime.now().strftime("%H:%M")
+            st.session_state["chat"] = st.session_state["chat"] + [("bot",now, response)]
+
+        else:
+            st.session_state["check_reset"] = False
+
+
+
 
 #실행함수
 if __name__=="__main__":
