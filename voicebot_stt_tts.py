@@ -3,6 +3,9 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
+# 음원 파일 재생을 위한 패키지 추가
+import base64
+
 load_dotenv()
 
 from audiorecorder import audiorecorder
@@ -11,9 +14,8 @@ from datetime import datetime
 
 get_api_key = os.environ.get('OPEN_API_KEY')
 
-client = OpenAI(
-    api_key = get_api_key
-)
+client = OpenAI(api_key = get_api_key)
+
 
 def STT(speech):
     #파일 저장
@@ -31,6 +33,31 @@ def STT(speech):
     os.remove(filename)
 
     return transcription.text
+
+def TTS(text):
+    filename = "output.mp3"
+    response = client.audio.speech.create(
+        model="tts-1",
+        voice="alloy",
+        input=text
+    )
+    response.stream_to_file(filename)
+
+    # 음원 파일 자동 재생생
+    with open(filename, "rb") as f:
+        data = f.read()
+        b64 = base64.b64encode(data).decode()
+        md = f"""
+            <audio autoplay="True">
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            """
+        st.markdown(md, unsafe_allow_html=True)
+
+    # 파일 삭제
+    os.remove(filename)
+
+
 
 def ask_gpt(prompt, model):
     response = client.chat.completions.create(
@@ -127,10 +154,23 @@ def main():
             now = datetime.now().strftime("%H:%M")
             st.session_state["chat"] = st.session_state["chat"] + [("bot",now, response)]
 
+            #채팅 형식으로 시각화 하기
+            for sender, time, message in st.session_state["chat"]:
+                if sender == "user":
+                    st.write(f'<div style="display:flex;align-items:center;"><div style="background-color:#007AFF;color:white;border-radius:12px;padding:8px 12px;margin-right:8px;">{message}</div><div style="font-size:0.8rem;color:gray;">{time}</div></div>', 
+                             unsafe_allow_html=True)
+                    st.write("")
+                else:
+                    st.write(f'<div style="display:flex;align-items:center;justify-content:flex-end;"><div style="background-color:lightgray;border-radius:12px;padding:8px 12px;margin-left:8px;">{message}</div><div style="font-size:0.8rem;color:gray;">{time}</div></div>', 
+                             unsafe_allow_html=True)
+                    st.write("")
+            
+            # TTS 를 활용하여 음성 파일 생성 및 재생
+            TTS(response)
+
+
         else:
             st.session_state["check_reset"] = False
-
-
 
 
 #실행함수
